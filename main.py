@@ -1,9 +1,16 @@
 import pandas as pd
+import argparse
 
-Copy_of_MyFoodData = pd.ExcelFile("C:\\Users\\Ludwiczek Kroliczek\\Desktop\\Projekt_Diety\\Copy_of_MyFoodData.xlsx")
+parser = argparse.ArgumentParser(description="Possible Arguments!!!", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument("-my", "--MyFoodData")
+parser.add_argument("-mc", "--McCanceDataSet")
+args = vars(parser.parse_args())
+print("Działa?")
+
+Copy_of_MyFoodData = pd.ExcelFile(args["MyFoodData"])
 Copy_of_MyFoodData_DF = pd.read_excel(Copy_of_MyFoodData, "SR Legacy and FNDDS")
 
-Composition_of_Foods_Dataset = pd.ExcelFile("C:\\Users\\Ludwiczek Kroliczek\\Desktop\\Projekt_Diety\\McCance_Widdowsons_Composition_of_Foods_Integrated_Dataset_2021..xlsx")
+Composition_of_Foods_Dataset = pd.ExcelFile(args["McCanceDataSet"])
 ToMargeDF1 = pd.read_excel(Composition_of_Foods_Dataset, "1.3 Proximates")
 ToMargeDF1 = ToMargeDF1.drop([0, 1])
 ToMargeDF2 = pd.read_excel(Composition_of_Foods_Dataset, "1.4 Inorganics")
