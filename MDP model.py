@@ -17,7 +17,6 @@ food_df = food_df.reset_index(drop=True)
 print(food_df)
 seed()
 
-
 class Model:
     def __init__(self, dane, target, learning_rate, epsilon):
         self.dane = self.add_qualities(dane)
@@ -34,7 +33,7 @@ class Model:
         e = randint(1, 101)
         while len(list_of_products) < 4:
             list_of_random = []
-            for i in range(0, 3):
+            for i in range(0, 4):
                 list_of_random.append(randint(0, 29))
             list_of_qualites = [dane["Qualites"][i] for i in list_of_random]
             if list_of_qualites[0] == list_of_qualites[1] == list_of_qualites[2] == list_of_qualites[3]:
@@ -57,9 +56,29 @@ class Model:
             return -1
         else:
             return 1
-    def update(self, dane,reward,learning_rate, list_of_products):
+    def update(self, dane, reward,learning_rate, list_of_products):
         for i in list_of_products:
             dane["Qualites"][i] = dane["Qualites"][i] + learning_rate*(reward - dane["Qualites"][i])
+
+    def evaluation(self, nb_episodes):
+        for i in range(0, nb_episodes-1):
+            Model.modelv1(self, self.dane, 560, 0.5)
+            nb_episodes_dic = {f"Episode{i}": Model.modelv1(self, self.dane, 560, 0.5)[0]}
+            Model.reward(self, Model.modelv1(self, self.dane, 560, 0.5)[0])
+            Model.update(self, self.dane, Model.reward(self, Model.modelv1(self, self.dane, 560, 0.5)[0]) ,0.05, Model.modelv1(self, self.dane, 560, 0.5)[1])
+        return nb_episodes_dic
+
+
+if __name__ == "__main__":
+    modelV1 = Model(food_df, 560, 0.05, 0.5)
+    Model.evaluation(modelV1, 500)
+
+
+
+
+
+
+
 
 
 
