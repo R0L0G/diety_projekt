@@ -1,31 +1,15 @@
-from random import randint, seed, sample
+import random
 from collections import defaultdict
 
 import numpy as np
-
 import pandas as pd
 
+DATA_PATH = "C:\\Users\\Ludwiczek Kroliczek\\Desktop\\Projekt_Diety\\Copy_of_MyFoodData.xlsx"
 
-excel = pd.ExcelFile("C:\\Users\\Ludwiczek Kroliczek\\PycharmProjects\\Diety\\diety\\diety\\Data\\Copy_of_MyFoodData.xlsx")
-dane = pd.read_excel(excel, "SR Legacy and FNDDS")
-list_of_columns = [dane["Name"], dane["Calories"],dane["Fat (g)"], dane["Protein (g)"], dane["Carbohydrate (g)"]]
-dane_testowe = dane[["Name", "Calories", "Fat (g)", "Protein (g)", "Carbohydrate (g)"]]
-dane_testowe.columns = ["Name", "Calories", "Fat", "Protein", "Carbohydrate"]
-seed(14)
-random_list = []
-for i in range(0, 30):
-    random_list.append(randint(0, 14165))
-food_df = dane_testowe.take(random_list)
-food_df = food_df.reset_index(drop=True)
-print(food_df["Calories"])
-seed()
 
-class mcts:
-    def __init__(self, value,target_value,state=None, parent=None, parent_action=None):
-        if state is None:
-            self.state = self
-        else:
-            self.state = state
+class MonteCarloTreeSearchNode():
+    def __init__(self, state, target, all_actions, parent=None, parent_action=None):
+        self.state = state
         self.parent = parent
         self.parent_action = parent_action
         self.children = []
@@ -33,15 +17,14 @@ class mcts:
         self._results = defaultdict(int)
         self._results[1] = 0
         self._results[-1] = 0
+        self.target = target
+        self.all_actions = all_actions
         self._untried_actions = None
         self._untried_actions = self.untried_actions()
-        self.target_value = target_value
-        self.value = value
-        self.list_of_index = []
         return
 
     def untried_actions(self):
-        self._untried_actions = self.state.get_legal_actions()
+        self._untried_actions = self.get_legal_actions()
         return self._untried_actions
 
     def q(self):
@@ -54,24 +37,24 @@ class mcts:
 
     def expand(self):
         action = self._untried_actions.pop()
-        next_state = self.state.move(action)
-        child_node = mcts(value=self.value,target_value=np.array([1700, 100, 100, 100]), parent=self, parent_action=action)
+        next_state = self.move(action[1])
+        child_node = MonteCarloTreeSearchNode(
+            next_state, target=self.target, all_actions=self.all_actions, parent=self, parent_action=action)
         self.children.append(child_node)
         return child_node
 
     def is_terminal_node(self):
-        return self.state.is_game_over()
+        return self.is_game_over(self.state)
 
     def rollout(self):
-        current_rollout_state = self.state
+        current_rollout_state = self
 
-        while not current_rollout_state.is_game_over():
+        while not current_rollout_state.is_game_over(current_rollout_state.state):
             possible_moves = current_rollout_state.get_legal_actions()
 
             action = self.rollout_policy(possible_moves)
-            current_rollout_state = current_rollout_state.move(action)
+            current_rollout_state.state = current_rollout_state.move(action[1])
         return current_rollout_state.game_result()
-
 
     def backpropagate(self, result):
         self._number_of_visits += 1.
@@ -80,21 +63,20 @@ class mcts:
             self.parent.backpropagate(result)
 
     def is_fully_expanded(self):
-        return len(self._untried_actions) == 0
+        for state in self.get_legal_actions():
+            if not self.is_game_over(state[1]):
+                return False
+        return True
 
     def best_child(self, c_param=0.1):
-
         choices_weights = [(c.q() / c.n()) + c_param * np.sqrt((2 * np.log(self.n()) / c.n())) for c in self.children]
         return self.children[np.argmax(choices_weights)]
 
     def rollout_policy(self, possible_moves):
 
-        next_move = possible_moves[np.random.randint(len(possible_moves))]
-        self.list_of_index.append(next_move)
-        return next_move
+        return possible_moves[np.random.randint(len(possible_moves))]
 
     def _tree_policy(self):
-
         current_node = self
         while not current_node.is_terminal_node():
 
@@ -118,27 +100,36 @@ class mcts:
         '''
         Modify according to your game or
         needs. Constructs a list of all
-        possible actions from current state.
+        possible states from current state.
         Returns a list.
         '''
-        products = [food_df.iloc[i, :] for i in sample(range(0, 29), 4)]
-        return products
-        '''Trzeba zaimplementować metodę jak w backpropagation żeby nie były wybierane produkty znajdujące się w parent_node'''
+        df = self.all_actions
+        df_values = df[
+            [
+                "Calories",
+                "Fat (g)",
+                "Protein (g)",
+                "Carbohydrate (g)"
+            ]
+        ].to_numpy().tolist()
+        names = df["Name"].tolist()
+        legal_actions = []
+        for name, nutritions in zip(names, df_values):
+            legal_actions.append((name, self.state + nutritions))
+        random.shuffle(legal_actions)
+        return legal_actions
 
-    def is_game_over(self):
+    def is_game_over(self, state):
         '''
         Modify according to your game or
         needs. It is the game over condition
         and depends on your game. Returns
         true or false
         '''
-        if all(self.value >= self.target_value):
+        if all(state > 0.95 * self.target) or not self._untried_actions:
             return True
         else:
             return False
-
-
-
 
     def game_result(self):
         '''
@@ -147,7 +138,7 @@ class mcts:
         on your state corresponding to win,
         tie or a loss.
         '''
-        if all(self.value <= self.target_value + self.target_value/10) and all(self.value >= self.target_value - self.target_value/10):
+        if all(self.state > 0.95 * self.target) and all(self.state < 1.05 * self.target):
             return 1
         else:
             return -1
@@ -165,23 +156,36 @@ class mcts:
         thing like board[2][3] = 1, where 1
         represents that x is placed. Returns
         the new state after making a move.
-            !dodaje po każdym movie
-            !is_game_over sprawdza value jeżeli jest w przedziale win koniec gry, jezeli jest za przedziałem loss koniec gry
-            !game_resault sprawdza value i zwraca 1 lub -1
         '''
-        self.value += action[["Calories", "Fat", "Protein", "Carbohydrate"]]
-        return self
+        return action
 
 
-def main():
-    root = mcts(value=np.array([0, 0, 0, 0]), target_value=np.array([1700, 100, 100, 100]))
+excel = pd.ExcelFile(DATA_PATH)
+data = pd.read_excel(excel, "SR Legacy and FNDDS")[
+    [
+        "Name",
+        "Calories",
+        "Fat (g)",
+        "Protein (g)",
+        "Carbohydrate (g)"
+    ]
+]
+test_data = data.sample(n=1000, random_state=12).reset_index(drop=True)
+
+state = np.array([0.0, 0.0, 0.0, 0.0])
+root = MonteCarloTreeSearchNode(
+    state,
+    np.array([1725.0, 105.0, 60.0, 135.0]),
+    test_data
+)
+while not root.is_game_over(state):
     selected_node = root.best_action()
-    print("działa")
-    print(root.children, "tu print")
-    return
-
-if __name__ == "__main__":
-    main()
-
-
-
+    print(selected_node.parent_action[0], selected_node.parent_action[1]-state)
+    state = selected_node.parent_action[1]
+    print("state ", state)
+    root = MonteCarloTreeSearchNode(
+        state,
+        np.array([1725.0, 105.0, 60.0, 135.0]),
+        test_data
+    )
+print("target: ", 0.95*np.array([1725.0, 105.0, 60.0, 135.0]), 1.05*np.array([1725.0, 105.0, 60.0, 135.0]))
