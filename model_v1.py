@@ -16,7 +16,7 @@ food_df = dane_testowe.take(random_list)
 food_df = food_df.reset_index(drop=True)
 print(food_df)
 seed()
-'''
+
 class Model:
     def __init__(self, dane, target, learning_rate, epsilon):
         self.dane = self.add_qualities(dane)
@@ -73,7 +73,6 @@ class Model:
 if __name__ == "__main__":
     modelV1 = Model(food_df, 560, 0.05, 0.05)
     print(Model.evaluation(modelV1, 500))
-'''
 
 
 
