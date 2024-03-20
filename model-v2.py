@@ -4,7 +4,7 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 
-DATA_PATH = "C:\\Users\\Ludwiczek Kroliczek\\Desktop\\Projekt_Diety\\Copy_of_MyFoodData.xlsx"
+DATA_PATH = ".\Projekt_Diety\\Copy_of_MyFoodData.xlsx"
 
 
 class MonteCarloTreeSearchNode():
