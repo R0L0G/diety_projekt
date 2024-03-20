@@ -4,7 +4,7 @@ from random import randint,seed
 import pandas as pd
 
 
-excel = pd.ExcelFile("C:\\Users\\Ludwiczek Kroliczek\\PycharmProjects\\Diety\\diety\\diety\\Data\\Copy_of_MyFoodData.xlsx")
+excel = pd.ExcelFile(".\Projekt_Diety\\Copy_of_MyFoodData.xlsx")
 dane = pd.read_excel(excel, "SR Legacy and FNDDS")
 list_of_columns = [dane["Name"], dane["Calories"],dane["Fat (g)"], dane["Protein (g)"], dane["Carbohydrate"]]
 dane_testowe = dane[["Name", "Calories", "Fat", "Protein", "Carbohydrate"]]
