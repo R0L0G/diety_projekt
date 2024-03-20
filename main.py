@@ -1,9 +1,9 @@
 import pandas as pd
 
-Copy_of_MyFoodData = pd.ExcelFile("C:\\Users\\Ludwiczek Kroliczek\\Desktop\\Projekt_Diety\\Copy_of_MyFoodData.xlsx")
+Copy_of_MyFoodData = pd.ExcelFile(".\Projekt_Diety\\Copy_of_MyFoodData.xlsx")
 Copy_of_MyFoodData_DF = pd.read_excel(Copy_of_MyFoodData, "SR Legacy and FNDDS")
 
-Composition_of_Foods_Dataset = pd.ExcelFile("C:\\Users\\Ludwiczek Kroliczek\\Desktop\\Projekt_Diety\\McCance_Widdowsons_Composition_of_Foods_Integrated_Dataset_2021..xlsx")
+Composition_of_Foods_Dataset = pd.ExcelFile(".\Projekt_Diety\\McCance_Widdowsons_Composition_of_Foods_Integrated_Dataset_2021..xlsx")
 ToMargeDF1 = pd.read_excel(Composition_of_Foods_Dataset, "1.3 Proximates")
 ToMargeDF1 = ToMargeDF1.drop([0, 1])
 ToMargeDF2 = pd.read_excel(Composition_of_Foods_Dataset, "1.4 Inorganics")
